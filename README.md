@@ -91,22 +91,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
             "hostname": "0.0.0.0",
             "pathMappings": {
                 "/var/www/html/": "${workspaceFolder}"
-            },
-			"ignore": [
-                "**/lib/private/AppFramework/Utility/SimpleContainer.php",
-                "**/lib/private/ServerContainer.php",
-				"**/lib/private/AppFramework/DependencyInjection/DIContainer.php",
-				"**/lib/private/App/AppManager.php",
-				"**/lib/public/AppFramework/Db/QBMapper.php",
-				"**/lib/private/Share20/ProviderFactory.php",
-				"**/3rdparty/symfony/routing/Matcher/UrlMatcher.php",
-				"**/lib/private/Route/Router.php",
-				"**/lib/private/Files/Node/Root.php",
-				"**/lib/private/Files/AppData/AppData.php",
-				"**/apps/files/lib/Activity/Helper.php",
-				"**/lib/private/Files/Template/TemplateManager.php",
-				"**/lib/private/Share20/Manager.php"
-            ]
+            }
         }
     ]
 }
@@ -134,4 +119,5 @@ nano data/staticmimecontrol.json
 # Todo
 
 * Tests
-* publish to appstore
+* implement regex
+* finalize documentation
