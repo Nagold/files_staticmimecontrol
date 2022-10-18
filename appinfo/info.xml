@@ -4,7 +4,7 @@
 	<id>files_staticmimecontrol</id>
 	<name>Files Staticmimecontrol</name>
 	<summary>app to enable controlling of allowed mimetype per folder via a static text file</summary>
-	<description>app to enable controlling of allowed mimetype per folder via a static text file. More installation instructions can be found in the docs https://github.com/Nagold/files_staticmimecontrol/blob/master/README.md.</description>
+	<description>app to enable controlling of allowed mimetypes per folder(s) via a static text file. More instructions can be found in the docs.</description>
 	<version>1.0.0</version>
 	<licence>agpl</licence>
 	<author mail="gh-contact@volzit.de">Alexander Volz</author>
@@ -24,6 +24,6 @@
 	<bugs>https://github.com/Nagold/files_staticmimecontrol/issues</bugs>
 	<repository type="git">https://github.com/Nagold/files_staticmimecontrol.git</repository>
 	<dependencies>
-		<nextcloud min-version="24" max-version="24" />
+		<nextcloud min-version="24" max-version="25" />
 	</dependencies>
 </info>

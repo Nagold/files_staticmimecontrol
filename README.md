@@ -48,7 +48,7 @@ To setup a new development instance, we recommend to use juliushaertl/nextcloud-
 
 ```
 sudo echo "127.0.0.1 nextcloud.local" >> /etc/hosts
-sudo echo "127.0.0.1 stable24.local" >> /etc/hosts
+sudo echo "127.0.0.1 stable25.local" >> /etc/hosts
 
 mkdir -p $HOME/temp_staticmimecontrol
 git clone https://github.com/juliushaertl/nextcloud-docker-dev $HOME/temp_staticmimecontrol/nextcloud-docker-dev
@@ -58,14 +58,14 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/server/
 git fetch --unshallow
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git fetch origin
-git worktree add ../stable24 stable24
-cd ../stable24
+git worktree add ../stable25 stable25
+cd ../stable25
 git submodule update --init
-git clone https://github.com/Nagold/files_staticmimecontrol $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable24/apps/files_staticmimecontrol
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable24/apps/files_staticmimecontrol
+git clone https://github.com/Nagold/files_staticmimecontrol $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/apps/files_staticmimecontrol
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/apps/files_staticmimecontrol
 make composer-install
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev
-docker-compose up -d stable24 proxy database-mysql
+docker-compose up -d stable25 proxy database-mysql
 ```
 
 now your test instance is running.
@@ -79,7 +79,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose down
 ## run dev env afterwards
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose up -d stable24 proxy database-mysql && docker-compose logs -f
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose up -d stable25 proxy database-mysql && docker-compose logs -f
 ```
 
 ## follow container logs
@@ -90,7 +90,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
 
 ## Configure VSCode and Chrome/Brave
 
-* Create the file $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable24/.vscode/launch.json with the following contents, to enable xdebug:
+* Create the file $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/.vscode/launch.json with the following contents, to enable xdebug:
 
 ```
 {
@@ -133,15 +133,15 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
 * Install the Chrome Extension https://chrome.google.com/webstore/detail/xdebug-helper/eadndfjplgieldjbigjakmdgkmoaaaoc/related
 * Install vscode Extension https://marketplace.visualstudio.com/items?itemName=xdebug.php-debug
 * pin xdebug helper to your Browser bar
-* go to http://stable24.local/index.php/login and enable debugging via the xdebug helper button
-* Open $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable24 in vscode and press F5 to run xdebug debugging
-* refresh http://stable24.local/index.php/login , login with admin:admin and enable files_staticmimecontrol via the admin menu
+* go to http://stable25.local/index.php/login and enable debugging via the xdebug helper button
+* Open $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 in vscode and press F5 to run xdebug debugging
+* refresh http://stable25.local/index.php/login , login with admin:admin and enable files_staticmimecontrol via the admin menu
 * happy debugging :D
 
 ## how to edit staticmimecontrol.json in the container
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable24 /bin/bash
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash
 rm -rf /etc/apt/sources.list.d/blackfire.list && apt-get update && apt-get install nano
 nano data/staticmimecontrol.json
 ```
