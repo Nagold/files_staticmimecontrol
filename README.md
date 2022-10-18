@@ -6,22 +6,37 @@ This Files Staticmimecontrol app for Nextcloud enables administrators to whiteli
 
 The configuration gets loaded from `data/staticmimecontrol.json` by default. You can set a custom path in your config.php with the config parameter `staticmimecontrol_file`.
 
-an example config looks like that:
+The path and the mime type is preg_matched with % delimiters. This means, you have to use regexable strings in the config. 
+
+If you set denyrootbydefault to false, the root Folder will ALLOW ALL UPLOADS!
+
+An example config looks like that:
 
 ```
 {
     "denyrootbydefault": true,
     "rules": [
+
         {
-            "path": "asd",
-            "mime": "image/jpeg"
+            "path": ".*",
+            "mime": "image\\/jpeg"
+        },
+		{
+            "path": "Folder1",
+            "mime": "image.*"
         },
         {
-            "path": "asd",
-            "mime": "image/png"
+            "path": "Folder2",
+            "mime": "image\\/png"
+        },
+		{
+            "path": "Folder3.*",
+            "mime": "text.*"
         }
+
     ]
 }
+
 ```
 
 # Development
@@ -91,10 +106,26 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
             "hostname": "0.0.0.0",
             "pathMappings": {
                 "/var/www/html/": "${workspaceFolder}"
-            }
+            },
+			"ignore": [
+                "**/lib/private/AppFramework/Utility/SimpleContainer.php",
+                "**/lib/private/ServerContainer.php",
+				"**/lib/private/AppFramework/DependencyInjection/DIContainer.php",
+				"**/lib/private/App/AppManager.php",
+				"**/lib/public/AppFramework/Db/QBMapper.php",
+				"**/lib/private/Share20/ProviderFactory.php",
+				"**/3rdparty/symfony/routing/Matcher/UrlMatcher.php",
+				"**/lib/private/Route/Router.php",
+				"**/lib/private/Files/Node/Root.php",
+				"**/lib/private/Files/AppData/AppData.php",
+				"**/apps/files/lib/Activity/Helper.php",
+				"**/lib/private/Files/Template/TemplateManager.php",
+				"**/lib/private/Share20/Manager.php"
+            ]
         }
     ]
 }
+
 
 ``` 
 
@@ -119,5 +150,4 @@ nano data/staticmimecontrol.json
 # Todo
 
 * Tests
-* implement regex
 * finalize documentation

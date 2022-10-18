@@ -22,18 +22,15 @@
 
 namespace OCA\FilesStaticmimecontrol;
 
+use \Exception as Exception;
 use OC\Files\Storage\Storage;
 use OC\Files\Storage\Wrapper\Wrapper;
 use OCP\Files\ForbiddenException;
-use OCP\Files\IMimeTypeDetector;
 use OCP\Files\Storage\IWriteStreamStorage;
 
 class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	/** @var string */
 	public $mountPoint;
-
-	/** @var IMimeTypeDetector */
-	private $mimeDetector;
 
 	/**
 	 * @param array $parameters
@@ -41,7 +38,6 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	public function __construct($parameters) {
 		parent::__construct($parameters);
 		$this->mountPoint = $parameters['mountPoint'];
-		$this->mimeDetector = $parameters['mimeDetector'];
 	}
 
 	/**
@@ -53,15 +49,19 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	 */
 	public function readRules($path, $mimetype) {
 		$staticmimecontrolcfg = $this->readConfig();
-		$staticmimecontrolrules = $staticmimecontrolcfg["rules"];
-		if (is_array($staticmimecontrolrules)) {
+		if (is_array($staticmimecontrolcfg) && array_key_exists("rules", $staticmimecontrolcfg)) {
+			$staticmimecontrolrules = $staticmimecontrolcfg["rules"];
 			$staticmimecontrolrulesfiltered = array_filter($staticmimecontrolrules, function ($value) use ($path, $mimetype) {
-				return ($value["path"] == $path && $value["mime"] == $mimetype);
+
+				$pathmatch = preg_match('%' . $value["path"] . '%' , $path);
+				$mimematch = preg_match('%' . $value["mime"] . '%' , $mimetype);
+				return ($pathmatch && $mimematch);
 			});
 			return $staticmimecontrolrulesfiltered;
 		}
 		return [];
 	}
+
 
 
 	/**
@@ -75,7 +75,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 			$datadir = $config->getSystemValue('datadirectory', \OC::$SERVERROOT . '/data/');
 			$jsonFile = $config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
 		} catch (Exception $e) {
-			error_log("error reading staticmimecontrol_file: " . $e->getMessage(), 0);
+			error_log("error reading staticmimecontrol_file config: " . $e->getMessage(), 0);
 			return [];
 		}
 		if (is_file($jsonFile)) {
@@ -83,7 +83,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 		}
 		return [];
 	}
-	
+
 	/**
 	 * @throws ForbiddenException
 	 */
@@ -96,7 +96,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 		}
 
 		if ($path == $prefix && $denyroot) {
-			throw new ForbiddenException('Access denied to default', false);
+			throw new ForbiddenException('Access denied to default Folder', false);
 		}
 
 		$newpath = $path;
@@ -107,22 +107,19 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 			$newpath = substr($newpath, 1);
 		}
 
-		$prefix = "appdata_oc";
+		$prefix_1 = "appdata_oc";
 		$prefix_2 = "uploads/";
-		$suffix = ".part";
 
-		//todo try catch mime detection anf if detection fails and suffix is there, dont deny, else deny
-
-		if (substr($newpath, 0, strlen($prefix)) != $prefix && substr($path, 0, strlen($prefix_2)) != $prefix_2) {
+		if (substr($newpath, 0, strlen($prefix_1)) != $prefix_1 && substr($path, 0, strlen($prefix_2)) != $prefix_2) {
 			if (dirname($newpath) != "" && dirname($newpath) != ".") {
-				try {
-					$mime = $this->mimeDetector->detect($path);
-					$cfg = $this->readRules(dirname($newpath), $mime);
-				} catch (Throwable $e) {
-					if (str_ends_with($path, $suffix)) {
-						$cfg = [];
+
+					$mime = $this->storage->getMimeType($path);
+					if (!$mime || $mime == "httpd/unix-directory")
+					{
+						return;
 					}
-				}
+					$cfg = $this->readRules(dirname($newpath), $mime);
+
 
 
 				if (count($cfg) === 0) {
