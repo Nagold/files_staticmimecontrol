@@ -52,9 +52,8 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 		if (is_array($staticmimecontrolcfg) && array_key_exists("rules", $staticmimecontrolcfg)) {
 			$staticmimecontrolrules = $staticmimecontrolcfg["rules"];
 			$staticmimecontrolrulesfiltered = array_filter($staticmimecontrolrules, function ($value) use ($path, $mimetype) {
-
-				$pathmatch = preg_match('%' . $value["path"] . '%' , $path);
-				$mimematch = preg_match('%' . $value["mime"] . '%' , $mimetype);
+				$pathmatch = preg_match('%' . $value["path"] . '%', $path);
+				$mimematch = preg_match('%' . $value["mime"] . '%', $mimetype);
 				return ($pathmatch && $mimematch);
 			});
 			return $staticmimecontrolrulesfiltered;
@@ -112,13 +111,11 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 
 		if (substr($newpath, 0, strlen($prefix_1)) != $prefix_1 && substr($path, 0, strlen($prefix_2)) != $prefix_2) {
 			if (dirname($newpath) != "" && dirname($newpath) != ".") {
-
-					$mime = $this->storage->getMimeType($path);
-					if (!$mime || $mime == "httpd/unix-directory")
-					{
-						return;
-					}
-					$cfg = $this->readRules(dirname($newpath), $mime);
+				$mime = $this->storage->getMimeType($path);
+				if (!$mime || $mime == "httpd/unix-directory") {
+					return;
+				}
+				$cfg = $this->readRules(dirname($newpath), $mime);
 
 
 
