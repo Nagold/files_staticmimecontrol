@@ -1,0 +1,40 @@
+name: check for new nextcloud stable release
+permissions:
+  contents: read
+  issues: write 
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '30 14 * * *'
+
+env:
+  PHP_VERSION: 8.1
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: get current supported version
+        run: echo "SUPPORTED_VERSION=$(cat ./appinfo/info.xml | grep 'max-version' | sed 's|.*max-version="||g' | sed 's|".*||g')" >> $GITHUB_ENV
+      - name: calculate next version
+        run: echo "NEXT_VERSION=$(( ${{ env.SUPPORTED_VERSION }} + 1))" >> $GITHUB_ENV
+      - name: generate next stable branch
+        run: echo "NEXT_SABLE_BRANCH=stable${{ env.NEXT_VERSION }}" >> $GITHUB_ENV
+      - name: get current stable branch
+        run: echo "NEXT_STABLE_BRANCH_OUTPUT=$(curl -s -L "http://api.github.com/repos/nextcloud/server/branches/${{ env.NEXT_SABLE_BRANCH }}" |jq -r '.name')" >> $GITHUB_ENV
+
+      - name: create issue from file
+        uses: JasonEtco/create-an-issue@v2.6
+        id: issue
+        if: ${{ env.NEXT_STABLE_BRANCH_OUTPUT == env.NEXT_SABLE_BRANCH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_VERSION: ${{ env.NEXT_VERSION }}
+        with:
+          filename: .github/templates/issue.newmajor.md
