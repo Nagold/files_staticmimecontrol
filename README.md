@@ -45,7 +45,7 @@ An example config looks like that:
 
 ## initial setup
 
-To setup a new development instance, we recommend to use juliushaertl/nextcloud-docker-dev. Prerequired are Docker and docker-compose and Make.
+To setup a new development instance, we recommend to use [juliushaertl/nextcloud-docker-dev](https://github.com/juliushaertl/nextcloud-docker-dev). Prerequired are Docker and docker-compose and Make.
 
 ```
 sudo echo "127.0.0.1 nextcloud.local" >> /etc/hosts
@@ -67,6 +67,8 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/apps/fil
 make composer-install
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev
 docker-compose up -d stable25 proxy database-mysql
+sleep 25
+docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini"
 ```
 
 now your test instance is running.
@@ -80,7 +82,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose down
 ## run dev env afterwards
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose up -d stable25 proxy database-mysql && docker-compose logs -f
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose up -d stable25 proxy database-mysql && sleep 25 && docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini" && docker-compose logs -f
 ```
 
 ## follow container logs
@@ -134,6 +136,8 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
 * Install the Chrome Extension https://chrome.google.com/webstore/detail/xdebug-helper/eadndfjplgieldjbigjakmdgkmoaaaoc/related
 * Install vscode Extension https://marketplace.visualstudio.com/items?itemName=xdebug.php-debug
 * pin xdebug helper to your Browser bar
+* start dev env
+* run ``` docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini" ``` 
 * go to http://stable25.local/index.php/login and enable debugging via the xdebug helper button
 * Open $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 in vscode and press F5 to run xdebug debugging
 * refresh http://stable25.local/index.php/login , login with admin:admin and enable files_staticmimecontrol via the admin menu
