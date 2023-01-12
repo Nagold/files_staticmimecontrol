@@ -93,17 +93,13 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	 * @throws ForbiddenException
 	 */
 	protected function checkFileAccess(string $path, bool $isDir = false): void {
-
 		$currentusersession = $this->userSession->getUser();
 		$currentmountpoint = $this->mountPoint;
 		$storagetypeobj = $this->storage->storage->storage;
 
-		if ($storagetypeobj != null)
-		{
+		if ($storagetypeobj != null) {
 			$storagetype = get_class($storagetypeobj);
-		}
-		else
-		{
+		} else {
 			$storagetype = "NotAvailable";
 		}
 

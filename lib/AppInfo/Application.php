@@ -30,13 +30,11 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\Files\Storage\IStorage;
-use OCP\Files\IMimeTypeDetector;
 use OCP\Util;
 
 class Application extends App implements IBootstrap {
 	public function __construct() {
 		parent::__construct('files_staticmimecontrol');
-
 	}
 
 	/**
@@ -45,7 +43,6 @@ class Application extends App implements IBootstrap {
 	public function addStorageWrapper() {
 		// Needs to be added as the first layer
 		Filesystem::addStorageWrapper('files_staticmimecontrol', [$this, 'addStorageWrapperCallback'], -10);
-
 	}
 
 	/**
@@ -56,7 +53,6 @@ class Application extends App implements IBootstrap {
 	 */
 	public function addStorageWrapperCallback($mountPoint, IStorage $storage) {
 		if (!OC::$CLI && !$storage->instanceOfStorage(SharedStorage::class)) {
-
 			return new StorageWrapper([
 				'storage' => $storage,
 				'mountPoint' => $mountPoint,
