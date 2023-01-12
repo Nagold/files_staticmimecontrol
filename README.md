@@ -67,9 +67,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/apps/fil
 make composer-install
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev
 docker-compose up -d stable25 proxy database-mysql
-sleep 25
-docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini"
-docker-compose exec stable25 /bin/bash -c "pkill -USR1 apache2"
+docker-compose logs -f
 ```
 
 now your test instance is running.
@@ -97,10 +95,22 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
 ```
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini" && docker-compose exec stable25 /bin/bash -c "pkill -USR1 apache2"
 ```
+
+
+## enable staticmimecontrol
+```
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ app:enable files_staticmimecontrol"
+```
+
 ## install groupfolders
 
 ```
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ app:install groupfolders"
+```
+
+## add testgroup(folder)
+```
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ group:add testgroup" && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ group:adduser testgroup user1" && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ groupfolders:create testgroupfolder" && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ groupfolders:group 1 testgroup write share delete"
 ```
 
 ## open vscode
@@ -108,6 +118,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stab
 ```
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 && code .
 ```
+
 
 
 ## Configure VSCode and Chrome/Brave
