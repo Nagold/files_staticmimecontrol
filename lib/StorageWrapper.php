@@ -27,10 +27,15 @@ use OC\Files\Storage\Storage;
 use OC\Files\Storage\Wrapper\Wrapper;
 use OCP\Files\ForbiddenException;
 use OCP\Files\Storage\IWriteStreamStorage;
+use OCP\IUserManager;
 
 class StorageWrapper extends Wrapper implements IWriteStreamStorage {
-	/** @var string */
-	public $mountPoint;
+	private $mountPoint;
+
+	/** @var  IUserManager */
+	private $userManager;
+
+	private $userSession;
 
 	/**
 	 * @param array $parameters
@@ -38,6 +43,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	public function __construct($parameters) {
 		parent::__construct($parameters);
 		$this->mountPoint = $parameters['mountPoint'];
+		$this->userSession = $parameters['userSession'];
 	}
 
 	/**
@@ -87,7 +93,24 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	 * @throws ForbiddenException
 	 */
 	protected function checkFileAccess(string $path, bool $isDir = false): void {
+
+		$currentusersession = $this->userSession->getUser();
+		$currentmountpoint = $this->mountPoint;
+		$storagetypeobj = $this->storage->storage->storage;
+
+		if ($storagetypeobj != null)
+		{
+			$storagetype = get_class($storagetypeobj);
+		}
+		else
+		{
+			$storagetype = "NotAvailable";
+		}
+
+
+
 		$prefix = "files";
+
 		if (isset($this->readConfig()["denyrootbydefault"])) {
 			$denyroot = $this->readConfig()["denyrootbydefault"];
 		} else {
