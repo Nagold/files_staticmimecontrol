@@ -54,7 +54,7 @@ sudo echo "127.0.0.1 stable25.local" >> /etc/hosts
 mkdir -p $HOME/temp_staticmimecontrol
 git clone https://github.com/juliushaertl/nextcloud-docker-dev $HOME/temp_staticmimecontrol/nextcloud-docker-dev
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev
-./bootstrap.sh
+./bootstrap.sh groupfolders
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/server/
 git fetch --unshallow
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
@@ -96,6 +96,17 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
 
 ```
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini" && docker-compose exec stable25 /bin/bash -c "pkill -USR1 apache2"
+```
+## install groupfolders
+
+```
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ app:install groupfolders"
+```
+
+## open vscode
+
+```
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 && code .
 ```
 
 
