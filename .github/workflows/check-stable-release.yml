@@ -38,3 +38,4 @@ jobs:
           NEXT_VERSION: ${{ env.NEXT_VERSION }}
         with:
           filename: .github/templates/issue.newmajor.md
+          update_existing: true
