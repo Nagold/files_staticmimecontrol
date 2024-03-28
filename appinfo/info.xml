@@ -5,10 +5,12 @@
 	<name>Files Staticmimecontrol</name>
 	<summary>app to enable controlling of allowed mimetype per folder via a static text file</summary>
 	<description>app to enable controlling of allowed mimetypes per folder(s) via a static text file. More instructions can be found in the docs.</description>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<licence>agpl</licence>
 	<author mail="gh-contact@volzit.de">Alexander Volz</author>
-	<namespace>FilesStaticmimecontrol</namespace>
+	<author mail="juergen.porbadnigk@nagold.de">J&uuml;rgen Porbadnigk</author>
+	
+	<namespace>Files_Staticmimecontrol</namespace>
 
 	<types>
 		<filesystem/>
@@ -20,10 +22,22 @@
 
 	<category>files</category>
 	<category>workflow</category>
+	<category>security</category>
 	<website>https://github.com/Nagold/files_staticmimecontrol</website>
 	<bugs>https://github.com/Nagold/files_staticmimecontrol/issues</bugs>
 	<repository type="git">https://github.com/Nagold/files_staticmimecontrol.git</repository>
 	<dependencies>
-		<nextcloud min-version="24" max-version="25" />
+		<nextcloud min-version="26" max-version="28" />
 	</dependencies>
+	<activity>
+		<settings>
+			<setting>OCA\Files_Staticmimecontrol\Activity\Setting</setting>
+		</settings>
+		<filters>
+			<filter>OCA\Files_Staticmimecontrol\Activity\Filter</filter>
+		</filters>
+		<providers>
+			<provider>OCA\Files_Staticmimecontrol\Activity\Provider</provider>
+		</providers>
+	</activity>
 </info>
