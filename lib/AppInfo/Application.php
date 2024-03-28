@@ -23,48 +23,84 @@ namespace OCA\FilesStaticmimecontrol\AppInfo;
 
 use OC;
 use OC\Files\Filesystem;
-use OCA\Files_Sharing\SharedStorage;
-use OCA\FilesStaticmimecontrol\StorageWrapper;
+use OC\Files\Storage\Wrapper\Jail;
+#use OCA\Files_Sharing\SharedStorage;
+#use OCA\FilesStaticmimecontrol\StorageWrapper;
+use OCA\Files_Staticmimecontrol\MimetypeWrapper;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\Files\Storage\IStorage;
+use OCP\IL10N;
 use OCP\Util;
+use Psr\Log\LoggerInterface;
 
 class Application extends App implements IBootstrap {
+	public const APP_Name = 'files_staticmimecontrol';
+
 	public function __construct() {
-		parent::__construct('files_staticmimecontrol');
+		parent::__construct(self::APP_NAME, $urlParams);
 	}
 
-	/**
-	 * @internal
-	 */
-	public function addStorageWrapper() {
-		// Needs to be added as the first layer
-		Filesystem::addStorageWrapper('files_staticmimecontrol', [$this, 'addStorageWrapperCallback'], -10);
-	}
+#	/**
+#	 * @internal
+#	 */
+#	public function addStorageWrapper() {
+#		// Needs to be added as the first layer
+#		Filesystem::addStorageWrapper('files_staticmimecontrol', [$this, 'addStorageWrapperCallback'], -10);
+#	}
+#
+#	/**
+#	 * @internal
+#	 * @param $mountPoint
+#	 * @param IStorage $storage
+#	 * @return StorageWrapper|IStorage
+#	 */
+#	public function addStorageWrapperCallback($mountPoint, IStorage $storage) {
+#		if (!OC::$CLI && !$storage->instanceOfStorage(SharedStorage::class)) {
+#			return new StorageWrapper([
+#				'storage' => $storage,
+#				'mountPoint' => $mountPoint,
+#				'userSession' => \OC::$server->getUserSession(),
+#			]);
+#		}
+#
+#		return $storage;
+#	}
 
-	/**
-	 * @internal
-	 * @param $mountPoint
-	 * @param IStorage $storage
-	 * @return StorageWrapper|IStorage
-	 */
-	public function addStorageWrapperCallback($mountPoint, IStorage $storage) {
-		if (!OC::$CLI && !$storage->instanceOfStorage(SharedStorage::class)) {
-			return new StorageWrapper([
-				'storage' => $storage,
-				'mountPoint' => $mountPoint,
-				'userSession' => \OC::$server->getUserSession(),
-			]);
-		}
+	public function setupWrapper(): void {
+		Filesystem::addStorageWrapper(
+			'oc_staticmimetypecontrol',
+			function (string $mountPoint, IStorage $storage) {
+				if ($storage->instanceOfStorage(Jail::class)) {
+					// No reason to wrap jails again
+					return $storage;
+				}
 
-		return $storage;
+				$container = $this->getContainer();
+				$l10n = $container->get(IL10N::class);
+				$logger = $container->get(LoggerInterface::class);
+				$activityManager = $container->get(IManager::class);
+				$eventDispatcher = $container->get(IEventDispatcher::class);
+				$appManager = $container->get(IAppManager::class);
+				return new MimecontrolWrapper([
+					'storage' => $storage,
+					'l10n' => $l10n,
+					'logger' => $logger,
+					'activityManager' => $activityManager,
+					'isHomeStorage' => $storage->instanceOfStorage(IHomeStorage::class),
+					'eventDispatcher' => $eventDispatcher,
+					'trashEnabled' => $appManager->isEnabledForUser('files_trashbin'),
+				]);
+			},
+			1
+		);
 	}
 
 	public function register(IRegistrationContext $context): void {
-		Util::connectHook('OC_Filesystem', 'preSetup', $this, 'addStorageWrapper');
+#		Util::connectHook('OC_Filesystem', 'preSetup', $this, 'addStorageWrapper');
+		Util::connectHook('OC_Filesystem', 'preSetup', $this, 'setupWrapper');
 	}
 
 	public function boot(IBootContext $context): void {
