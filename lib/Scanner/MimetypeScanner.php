@@ -52,6 +52,7 @@ class MimetypeScanner extends ScannerBase {
             $config = json_decode(file_get_contents($jsonFile), true);
             if (is_array($config) && array_key_exists("rules", $config)) {
                 this->mimetypeRules = $config["rules"];
+            }
         }
     }
 
