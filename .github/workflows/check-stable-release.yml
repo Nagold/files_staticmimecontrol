@@ -30,7 +30,7 @@ jobs:
         run: echo "NEXT_STABLE_BRANCH_OUTPUT=$(curl -s -L "http://api.github.com/repos/nextcloud/server/branches/${{ env.NEXT_SABLE_BRANCH }}" |jq -r '.name')" >> $GITHUB_ENV
 
       - name: create issue from file
-        uses: JasonEtco/create-an-issue@v2.9.1
+        uses: JasonEtco/create-an-issue@v2.9.2
         id: issue
         if: ${{ env.NEXT_STABLE_BRANCH_OUTPUT == env.NEXT_SABLE_BRANCH }}
         env:
