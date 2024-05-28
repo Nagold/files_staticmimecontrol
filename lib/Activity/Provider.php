@@ -51,7 +51,7 @@ class Provider implements IProvider
 
     public function parse($language, IEvent $event, IEvent $previousEvent = null)
     {
-        if ($event->getApp !== Application::APP_NAME || $event->getType() !== self::TYPE_ILLEGALMIMETYPE_DETECTED) {
+        if ($event->getApp() !== Application::APP_NAME || $event->getType() !== self::TYPE_ILLEGALMIMETYPE_DETECTED) {
             throw new \InvalidArgumentException();
         }
 
@@ -73,7 +73,7 @@ class Provider implements IProvider
             $parameters['file'] = [
                 'type' => 'highlight',
                 'id' => $event->getObjectName(),
-                'id' => basename($event->getObjectName()),
+                'name' => basename($event->getObjectName()),
             ];
 
             if ($event->getMessage() === self::MESSAGE_FILE_DELETED) {
