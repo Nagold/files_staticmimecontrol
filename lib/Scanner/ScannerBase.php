@@ -24,7 +24,8 @@ namespace OCA\Files_Staticmimecontrol\Scanner;
 use OCA\Files_Staticmimecontrol\AppConfig;
 use OCA\Files_Staticmimecontrol\Item;
 use OCA\Files_Staticmimecontrol\Status;
-use OCA\Files_Staticmimecontrol\ŞtatusFactory;
+use OCA\Files_Staticmimecontrol\StatusFactory;
+use Psr\Log\LoggerInterface;
 
 abstract class ScannerBase implements IScanner {
         /**
@@ -60,10 +61,6 @@ abstract class ScannerBase implements IScanner {
                 $this->status = $this->statusFactory->newStatus();
         }
 
-        /**
-         * Get file mimetype
-         */
-        abstract protected function getMimetype();
 
         /**
          * @return Status
@@ -83,7 +80,6 @@ abstract class ScannerBase implements IScanner {
          */
         public function scan(Item $item): Status {
                 $this->initScanner();
-                $this->getMimetype();
                 return $this->getStatus();
         }
 
@@ -107,8 +103,6 @@ abstract class ScannerBase implements IScanner {
          */
         public function completeAsyncScan($path): Status {
                 $this->fileToCheck = $path;
-
-                $this->checkMimetype();
                 return $this->getStatus();
         }
 

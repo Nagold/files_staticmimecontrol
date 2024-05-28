@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2022 Alexander Volz <gh-contact@volzit.de>
  *
@@ -27,7 +28,8 @@ use OCP\Activity\IProvider;
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 
-class Provider implements IProvider {
+class Provider implements IProvider
+{
 
     public const TYPE_ILLEGALMIMETYPE_DETECTED = 'illegal_mimetype_detected';
 
@@ -41,47 +43,51 @@ class Provider implements IProvider {
     /** @var IURLGenerator */
     private $urlGenerator;
 
-    public function __contruct(IFactory $languageFactory, IURLGenerator $urlGenerator) {
+    public function __contruct(IFactory $languageFactory, IURLGenerator $urlGenerator)
+    {
         $this->languageFactory = $languageFactory;
         $this->urlGenerator = $urlGenerator;
     }
 
-    public function parse($language, IEvent $event, IEvent $previousEvent = null) {
+    public function parse($language, IEvent $event, IEvent $previousEvent = null)
+    {
         if ($event->getApp !== Application::APP_NAME || $event->getType() !== self::TYPE_ILLEGALMIMETYPE_DETECTED) {
             throw new \InvalidArgumentException();
         }
-        
-        $l = this->languageFactory->get('files_staticmimecontrol', $language);
-        
+
+        $l = $this->languageFactory->get('files_staticmimecontrol', $language);
+
         $parameters = [];
         $subject = '';
-        
+
         if ($event->getSubject() === self::SUBJECT_ILLEGALMIMETYPE_DETECTED) {
             $subject = $l->t('File {file} has illegal mime type {mimetype}');
-            
+
             $params = $event->getSubjectParameters();
             $parameters['mimetype'] = [
                 'type' => 'highlight',
                 'id' => $params[1],
                 'name' => $params[1],
             ];
-            
-            parameters['file'] = [
+
+            $parameters['file'] = [
                 'type' => 'highlight',
                 'id' => $event->getObjectName(),
                 'id' => basename($event->getObjectName()),
             ];
-            
+
             if ($event->getMessage() === self::MESSAGE_FILE_DELETED) {
                 $event->setParsedMessage($l->t('The file has been removed'));
             }
-        
-        this->setSubjects($event, $subject, $parameters);
-        
-        return $event;
+
+            $this->setSubjects($event, $subject, $parameters);
+
+            return $event;
+        }
     }
 
-    private function setSubjects(IEvent $event, string $subject, array $parameters): void {
+    private function setSubjects(IEvent $event, string $subject, array $parameters): void
+    {
         $placeholders = $replacements = [];
         foreach ($parameters as $placeholder => $parameter) {
             $placeholders[] = '{' . $placeholder . '}';

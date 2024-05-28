@@ -52,7 +52,7 @@ interface IScanner {
          *
          * @return Status
          */
-        public function completeAsyncScan(): Status;
+        public function completeAsyncScan($path): Status;
 
         /**
          * Open write handle. etc

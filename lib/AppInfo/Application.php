@@ -19,28 +19,32 @@
  *
  */
 
-namespace OCA\FilesStaticmimecontrol\AppInfo;
+namespace OCA\Files_Staticmimecontrol\AppInfo;
 
 use OC;
 use OC\Files\Filesystem;
 use OC\Files\Storage\Wrapper\Jail;
 #use OCA\Files_Sharing\SharedStorage;
-#use OCA\FilesStaticmimecontrol\StorageWrapper;
+#use OCA\Files_Staticmimecontrol\StorageWrapper;
 use OCA\Files_Staticmimecontrol\MimetypeWrapper;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\Activity\IManager;
+use OCP\EventDispatcher\IEventDispatcher;
+use OCP\App\IAppManager;
+use OCP\Files\IHomeStorage;
 use OCP\Files\Storage\IStorage;
 use OCP\IL10N;
 use OCP\Util;
 use Psr\Log\LoggerInterface;
 
 class Application extends App implements IBootstrap {
-	public const APP_Name = 'files_staticmimecontrol';
+	public const APP_NAME = 'files_staticmimecontrol';
 
 	public function __construct() {
-		parent::__construct(self::APP_NAME, $urlParams);
+		parent::__construct(self::APP_NAME);
 	}
 
 #	/**
@@ -84,7 +88,7 @@ class Application extends App implements IBootstrap {
 				$activityManager = $container->get(IManager::class);
 				$eventDispatcher = $container->get(IEventDispatcher::class);
 				$appManager = $container->get(IAppManager::class);
-				return new MimecontrolWrapper([
+				return new MimetypeWrapper([
 					'storage' => $storage,
 					'l10n' => $l10n,
 					'logger' => $logger,

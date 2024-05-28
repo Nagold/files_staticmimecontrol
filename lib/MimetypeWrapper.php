@@ -25,6 +25,7 @@ use OC\Files\Storage\Wrapper\Wrapper;
 use OCA\Files_Staticmimecontrol\Activity\Provider;
 use OCA\Files_Staticmimecontrol\AppInfo\Application;
 use OCA\Files_Staticmimecontrol\Event\ScanStateEvent;
+use OCA\Files_Staticmimecontrol\Scanner\MimetypeScanner;
 use OCA\Files_Trashbin\Trash\ITrashManager;
 use OCP\Activity\IManager as ActivityManager;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -113,7 +114,7 @@ class MimetypeWrapper extends Wrapper {
         }
 
         private function wrapStream(string $path, $stream) {
-                $scanner = new MimetypeScanner($appData, $logger, $statusFactory);
+                $scanner = new MimetypeScanner($appData, $logger, $statusFactory, $storage);
                 try {
                         return CallbackReadDataWrapper::wrap(
                                 $stream,

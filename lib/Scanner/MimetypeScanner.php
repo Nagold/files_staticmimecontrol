@@ -21,15 +21,24 @@
 
 namespace OCA\Files_Staticmimecontrol\Scanner;
 
-use OCA\Files_Staticmimetypecontrol\AppConfig;
+use OCA\Files_Staticmimecontrol\AppConfig;
+use OCA\Files_Staticmimecontrol\StatusFactory;
+use Psr\Log\LoggerInterface;
+use OC\Files\Storage\Storage;
 
 class MimetypeScanner extends ScannerBase {
 
     private $mimetypeRules = [];
-    private $denyRootByDefault = $true;
+    private $denyRootByDefault = true;
+    
+    /**
+	 * @var \OC\Files\Storage\Storage $storage
+	 */
+	protected $storage;
 
-    public function __contruct(AppConfig $config, LoggerInterface $logger, StatusFactory $statusFactory) {
-        parent::__contruct($config, $logger, $statusFactory);
+    public function __construct(AppConfig $config, LoggerInterface $logger, StatusFactory $statusFactory, Storage $storage) {
+        parent::__construct($config, $logger, $statusFactory);
+        $this->storage = $storage;
     }
 
     public function initScanner() {
@@ -51,13 +60,13 @@ class MimetypeScanner extends ScannerBase {
         if (is_file($jsonFile)) {
             $config = json_decode(file_get_contents($jsonFile), true);
             if (is_array($config) && array_key_exists("rules", $config)) {
-                this->mimetypeRules = $config["rules"];
+                $this->mimetypeRules = $config["rules"];
             }
         }
     }
 
     protected function checkMimetype() {
-        $mimeType = getMimeType($this->fileToCheck);
-        $this->status->parseResponse($this->fileToCheck, $mimetype, $this->mimetypeRules);
+        $mimeType = $this->storage->getMimeType($this->fileToCheck);
+        $this->status->parseResponse($this->fileToCheck, $mimeType, $this->mimetypeRules);
     }
 }
