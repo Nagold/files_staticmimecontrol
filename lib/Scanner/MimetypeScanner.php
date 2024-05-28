@@ -55,7 +55,7 @@ class MimetypeScanner extends ScannerBase {
                 $jsonFile = $config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
         } catch (Exception $e) {
                 $this->logger->error("error reading staticmimecontrol_file config: " . $e->getMessage(), 0);
-                return [];
+                return;
         }
         if (is_file($jsonFile)) {
             $config = json_decode(file_get_contents($jsonFile), true);
