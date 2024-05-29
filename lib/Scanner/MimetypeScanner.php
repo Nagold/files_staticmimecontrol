@@ -25,6 +25,7 @@ use OCA\Files_Staticmimecontrol\AppConfig;
 use OCA\Files_Staticmimecontrol\StatusFactory;
 use Psr\Log\LoggerInterface;
 use OC\Files\Storage\Storage;
+use OCP\Files\InvalidPathException;
 
 class MimetypeScanner extends ScannerBase {
 
@@ -56,7 +57,7 @@ class MimetypeScanner extends ScannerBase {
 #                $config = \OC::$server->getConfig();
                 $datadir = $this->appConfig->getSmcConfigpath();
                 $jsonFile = $this->appConfig->getSmcConfigfilename();
-        } catch (Exception $e) {
+        } catch (InvalidPathException $e) {
                 $this->logger->error("error reading staticmimecontrol_file config: " . $e->getMessage());
                 return;
         }
