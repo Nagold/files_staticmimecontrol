@@ -30,15 +30,18 @@ class MimetypeScanner extends ScannerBase {
 
     private $mimetypeRules = [];
     private $denyRootByDefault = true;
-    
+
+    protected AppConfig $appConfig;
+
     /**
 	 * @var \OC\Files\Storage\Storage $storage
 	 */
 	protected $storage;
 
     public function __construct(AppConfig $config, LoggerInterface $logger, StatusFactory $statusFactory, Storage $storage) {
-        parent::__construct($config, $logger, $statusFactory);
+    #    parent::__construct($config, $logger, $statusFactory);
         $this->storage = $storage;
+        $this->appConfig = $config;
     }
 
     public function initScanner() {
@@ -50,11 +53,11 @@ class MimetypeScanner extends ScannerBase {
          * @return array
          */
         try {
-                $config = \OC::$server->getConfig();
-                $datadir = $config->getSystemValue('datadirectory', \OC::$SERVERROOT . '/data/');
-                $jsonFile = $config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
+#                $config = \OC::$server->getConfig();
+                $datadir = $this->appConfig->getSmcConfigpath();
+                $jsonFile = $this->appConfig->getSmcConfigfilename();
         } catch (Exception $e) {
-                $this->logger->error("error reading staticmimecontrol_file config: " . $e->getMessage(), 0);
+                $this->logger->error("error reading staticmimecontrol_file config: " . $e->getMessage());
                 return;
         }
         if (is_file($jsonFile)) {
