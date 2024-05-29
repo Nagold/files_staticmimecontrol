@@ -29,10 +29,9 @@ class AppConfig {
     private $config;
 
     private $defaults = [
-        'scm_configfilename' => 'staticmimecontrol.json',
-        
+        'smc_configfilename' => 'staticmimecontrol.json',
+        'smc_configpath' => '/data/',
         ];
- 
  
     /**
      * Does all the someConfig to some_config magic
@@ -53,6 +52,38 @@ class AppConfig {
         }
         return $column;
     }
+
+    	/**
+	 * 	 * Set a value with magic __call invocation
+	 * 	 *
+	 *
+	 * @param string $key
+	 * @param array $args
+	 *
+	 * @throws \BadFunctionCallException
+	 */
+	protected function setter(string $key, array $args): void {
+		if (array_key_exists($key, $this->defaults)) {
+			$this->setAppValue($key, $args[0]);
+		} else {
+			throw new \BadFunctionCallException($key . ' is not a valid key');
+		}
+	}
+
+	/**
+	 * Get a value with magic __call invocation
+	 *
+	 * @param string $key
+	 * @return ?string
+	 * @throws \BadFunctionCallException
+	 */
+	protected function getter(string $key): ?string {
+		if (array_key_exists($key, $this->defaults)) {
+			return $this->getAppValue($key);
+		}
+
+		throw new \BadFunctionCallException($key . ' is not a valid key');
+	}
 
     /**
      * Get/set an option value by calling getSomeOption method
