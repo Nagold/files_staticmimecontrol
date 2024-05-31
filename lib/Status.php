@@ -72,7 +72,7 @@ class Status {
 
     public function parseResponse($path, $mime, $mimetyperules) {
         if (!$mime || $mime == "httpd/unix-directory") {
-            $this->numericStatus = MIMETYPE_ALLOWED;
+            $this->numericStatus = self::MIMETYPE_ALLOWED;
         } else {
             $filtered = array_filter($mimetyperules, function ($value) use ($path, $mime) {
                 $pathmatch = preg_match('%' . $value["path"] . '%', $path);
@@ -81,11 +81,11 @@ class Status {
             });
 
             if (count($filtered) === 0) {
-                this->numericStatus = MIMETYPE_ALLOWED;
-                this->details = '';
+                $this->numericStatus = self::MIMETYPE_ALLOWED;
+                $this->details = '';
             } else {
-                this->numericStatus = MIMETYPE_DISALLOWED;
-                this-details = 'Mime type "' . $mime . '" not allowed for "' . $path . '".';
+                $this->numericStatus = self::MIMETYPE_DISALLOWED;
+                $this->details = 'Mime type "' . $mime . '" not allowed for "' . $path . '".';
             }
         }
     }
