@@ -54,10 +54,10 @@ abstract class ScannerBase implements IScanner {
         protected $fileToCheck;
         protected $mimeType;
 
-        public function __construct(AppConfig $config, LoggerInterface $logger, StatusFactory $statusFactory) {
-                $this->appConfig = $config;
+        public function __construct(LoggerInterface $logger, Storage $storage) {
+                $this->appConfig = New AppConfig;
                 $this->logger = $logger;
-                $this->statusFactory = $statusFactory;
+                $this->statusFactory = New StatusFactory($this->logger);
                 $this->status = $this->statusFactory->newStatus();
         }
 
