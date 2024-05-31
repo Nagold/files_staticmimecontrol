@@ -30,8 +30,9 @@ use OCA\Files_Trashbin\Trash\ITrashManager;
 use OCP\Activity\IManager as ActivityManager;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\InvalidContentException;
+use OCP\Files\Storage;
 use OCP\IL10N;
-#use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class MimetypeWrapper extends Wrapper {
         /**
@@ -39,6 +40,9 @@ class MimetypeWrapper extends Wrapper {
          * @var array
          */
         private $writingModes = ['r+', 'w', 'w+', 'a', 'a+', 'x', 'x+', 'c', 'c+'];
+
+        /** @var Storage */
+        protected $storage;
 
         /** @var IL10N */
         protected $l10n;
@@ -63,6 +67,7 @@ class MimetypeWrapper extends Wrapper {
          */
         public function __construct($parameters) {
                 parent::__construct($parameters);
+                $this->storage = $parameters['storage'];
                 $this->l10n = $parameters['l10n'];
                 $this->logger = $parameters['logger'];
                 $this->activityManager = $parameters['activityManager'];
@@ -114,7 +119,7 @@ class MimetypeWrapper extends Wrapper {
         }
 
         private function wrapStream(string $path, $stream) {
-                $scanner = new MimetypeScanner($appData, $logger, $statusFactory, $storage);
+                $scanner = new MimetypeScanner($this->logger, $this->storage);
                 try {
                         return CallbackReadDataWrapper::wrap(
                                 $stream,
@@ -124,7 +129,7 @@ class MimetypeWrapper extends Wrapper {
                                 function ($data) use ($scanner) {
                                         $scanner->onAsyncData($data);
                                 },
-                                function () use ($path) {
+                                function () use ($scanner, $path) {
                                         $status = $scanner->completeAsyncScan($path);
                                         if ($status->getNumericStatus() === Status::MIMETYPE_DISALLOWED) {
                                                 //prevent from going to trashbin
@@ -151,11 +156,11 @@ class MimetypeWrapper extends Wrapper {
 
                                                 $activity = $this->activityManager->generateEvent();
                                                 $activity->setApp(Application::APP_NAME)
-                                                        ->setSubject(Provider::SUBJECT_VIRUS_DETECTED_UPLOAD, [$status->getDetails()])
+                                                        ->setSubject(Provider::SUBJECT_ILLEGALMIMETYPE_DETECTED, [$status->getDetails()])
                                                         ->setMessage(Provider::MESSAGE_FILE_DELETED)
                                                         ->setObject('', 0, $path)
                                                         ->setAffectedUser($owner)
-                                                        ->setType(Provider::TYPE_VIRUS_DETECTED);
+                                                        ->setType(Provider::TYPE_ILLEGALMIMETYPE_DETECTED);
                                                 $this->activityManager->publish($activity);
 
                                                 $this->logger->error('Disallowed mime type found, file deleted. ' . $status->getDetails() .
