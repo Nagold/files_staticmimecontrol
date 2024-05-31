@@ -21,6 +21,7 @@
 
 namespace OCA\Files_Staticmimecontrol\Scanner;
 
+use OC\Files\Storage\Storage;
 use OCA\Files_Staticmimecontrol\AppConfig;
 use OCA\Files_Staticmimecontrol\Item;
 use OCA\Files_Staticmimecontrol\Status;
