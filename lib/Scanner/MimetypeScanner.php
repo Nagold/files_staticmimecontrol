@@ -40,7 +40,7 @@ class MimetypeScanner extends ScannerBase {
 	protected $storage;
 
     public function __construct(LoggerInterface $logger, Storage $storage) {
-    #    parent::__construct($config, $logger, $statusFactory);
+        parent::__construct($logger, $storage);
         $this->storage = $storage;
 #        $this->appConfig = $config;
     }
