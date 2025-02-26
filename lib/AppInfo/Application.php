@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2022 Alexander Volz <gh-contact@volzit.de>
  *

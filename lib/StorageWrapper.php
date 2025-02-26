@@ -22,7 +22,7 @@
 
 namespace OCA\FilesStaticmimecontrol;
 
-use \Exception as Exception;
+use Exception as Exception;
 use OC\Files\Storage\Storage;
 use OC\Files\Storage\Wrapper\Wrapper;
 use OCP\Files\ForbiddenException;
@@ -32,7 +32,7 @@ use OCP\IUserManager;
 class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	private $mountPoint;
 
-	/** @var  IUserManager */
+	/** @var IUserManager */
 	private $userManager;
 
 	private $userSession;
@@ -55,11 +55,11 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	 */
 	public function readRules($path, $mimetype) {
 		$staticmimecontrolcfg = $this->readConfig();
-		if (is_array($staticmimecontrolcfg) && array_key_exists("rules", $staticmimecontrolcfg)) {
-			$staticmimecontrolrules = $staticmimecontrolcfg["rules"];
+		if (is_array($staticmimecontrolcfg) && array_key_exists('rules', $staticmimecontrolcfg)) {
+			$staticmimecontrolrules = $staticmimecontrolcfg['rules'];
 			$staticmimecontrolrulesfiltered = array_filter($staticmimecontrolrules, function ($value) use ($path, $mimetype) {
-				$pathmatch = preg_match('%' . $value["path"] . '%', $path);
-				$mimematch = preg_match('%' . $value["mime"] . '%', $mimetype);
+				$pathmatch = preg_match('%' . $value['path'] . '%', $path);
+				$mimematch = preg_match('%' . $value['mime'] . '%', $mimetype);
 				return ($pathmatch && $mimematch);
 			});
 			return $staticmimecontrolrulesfiltered;
@@ -80,7 +80,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 			$datadir = $config->getSystemValue('datadirectory', \OC::$SERVERROOT . '/data/');
 			$jsonFile = $config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
 		} catch (Exception $e) {
-			error_log("error reading staticmimecontrol_file config: " . $e->getMessage(), 0);
+			error_log('error reading staticmimecontrol_file config: ' . $e->getMessage(), 0);
 			return [];
 		}
 		if (is_file($jsonFile)) {
@@ -100,15 +100,15 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 		if ($storagetypeobj != null) {
 			$storagetype = get_class($storagetypeobj);
 		} else {
-			$storagetype = "NotAvailable";
+			$storagetype = 'NotAvailable';
 		}
 
 
 
-		$prefix = "files";
+		$prefix = 'files';
 
-		if (isset($this->readConfig()["denyrootbydefault"])) {
-			$denyroot = $this->readConfig()["denyrootbydefault"];
+		if (isset($this->readConfig()['denyrootbydefault'])) {
+			$denyroot = $this->readConfig()['denyrootbydefault'];
 		} else {
 			$denyroot = true;
 		}
@@ -121,17 +121,17 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 		if (substr($newpath, 0, strlen($prefix)) == $prefix) {
 			$newpath = substr($newpath, strlen($prefix));
 		}
-		if (substr($newpath, 0, 1) == "/") {
+		if (substr($newpath, 0, 1) == '/') {
 			$newpath = substr($newpath, 1);
 		}
 
-		$prefix_1 = "appdata_oc";
-		$prefix_2 = "uploads/";
+		$prefix_1 = 'appdata_oc';
+		$prefix_2 = 'uploads/';
 
 		if (substr($newpath, 0, strlen($prefix_1)) != $prefix_1 && substr($path, 0, strlen($prefix_2)) != $prefix_2) {
-			if (dirname($newpath) != "" && dirname($newpath) != ".") {
+			if (dirname($newpath) != '' && dirname($newpath) != '.') {
 				$mime = $this->storage->getMimeType($path);
-				if (!$mime || $mime == "httpd/unix-directory") {
+				if (!$mime || $mime == 'httpd/unix-directory') {
 					return;
 				}
 				$cfg = $this->readRules(dirname($newpath), $mime);
@@ -140,9 +140,9 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 
 				if (count($cfg) === 0) {
 					if (isset($mime)) {
-						$msg = 'Access denied to '.$mime. ' in Folder '. $newpath;
+						$msg = 'Access denied to ' . $mime . ' in Folder ' . $newpath;
 					} else {
-						$msg = 'Access denied in Folder '. $newpath;
+						$msg = 'Access denied in Folder ' . $newpath;
 					}
 
 					error_log($msg, 0);
@@ -217,7 +217,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	/**
 	 * @throws ForbiddenException
 	 */
-	public function writeStream(string $path, $stream, int $size = null): int {
+	public function writeStream(string $path, $stream, ?int $size = null): int {
 		// Required for object storage since  part file is not in the storage so we cannot check it before moving it to the storage
 		// As an alternative we might be able to check on the cache update/insert/delete though the Cache wrapper
 		$result = $this->storage->writeStream($path, $stream, $size);
