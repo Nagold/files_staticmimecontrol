@@ -24,14 +24,16 @@ namespace OCA\FilesStaticmimecontrol\AppInfo;
 
 use OC\Files\Filesystem;
 use OCA\Files_Sharing\SharedStorage;
+use OCA\FilesStaticmimecontrol\Listener\BeforeFileSystemSetupListener;
 use OCA\FilesStaticmimecontrol\StorageWrapper;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Files\Events\BeforeFileSystemSetupEvent;
 use OCP\Files\Storage\IStorage;
 use OCP\IConfig;
-use OCP\Util;
 
 class Application extends App implements IBootstrap {
 	public function __construct() {
@@ -66,11 +68,15 @@ class Application extends App implements IBootstrap {
 
 
 	public function register(IRegistrationContext $context): void {
-		//currently no replacement event available!
-		Util::connectHook('OC_Filesystem', 'preSetup', $this, 'addStorageWrapper');
+		//nothing to do here
 	}
 
 	public function boot(IBootContext $context): void {
-		// No initialization needed
+		$context->injectFn(function (IEventDispatcher $eventDispatcher) {
+			$eventDispatcher->addListener(
+				BeforeFileSystemSetupEvent::class,
+				[new BeforeFileSystemSetupListener($this), 'handle']
+			);
+		});
 	}
 }
