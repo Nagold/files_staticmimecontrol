@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2022 Alexander Volz <gh-contact@volzit.de>
  *
@@ -21,7 +22,6 @@
 
 namespace OCA\FilesStaticmimecontrol\AppInfo;
 
-use OC;
 use OC\Files\Filesystem;
 use OCA\Files_Sharing\SharedStorage;
 use OCA\FilesStaticmimecontrol\StorageWrapper;
@@ -30,6 +30,7 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\Files\Storage\IStorage;
+use OCP\IConfig;
 use OCP\Util;
 
 class Application extends App implements IBootstrap {
@@ -38,35 +39,38 @@ class Application extends App implements IBootstrap {
 	}
 
 	/**
+	 * Adds storage wrapper.
+	 *
 	 * @internal
 	 */
-	public function addStorageWrapper() {
-		// Needs to be added as the first layer
+	public function addStorageWrapper(): void {
 		Filesystem::addStorageWrapper('files_staticmimecontrol', [$this, 'addStorageWrapperCallback'], -10);
 	}
 
 	/**
+	 * Callback for adding storage wrapper.
+	 *
 	 * @internal
-	 * @param $mountPoint
 	 * @param IStorage $storage
 	 * @return StorageWrapper|IStorage
 	 */
-	public function addStorageWrapperCallback($mountPoint, IStorage $storage) {
-		if (!OC::$CLI && !$storage->instanceOfStorage(SharedStorage::class)) {
-			return new StorageWrapper([
-				'storage' => $storage,
-				'mountPoint' => $mountPoint,
-				'userSession' => \OC::$server->getUserSession(),
-			]);
-		}
+	public function addStorageWrapperCallback(string $mountPoint, IStorage $storage): IStorage {
+		if (php_sapi_name() !== 'cli' && !$storage->instanceOfStorage(SharedStorage::class)) {
+			$config = $this->getContainer()->get(IConfig::class);
 
+			return new StorageWrapper([
+			], storage:$storage, config:$config);
+		}
 		return $storage;
 	}
 
+
 	public function register(IRegistrationContext $context): void {
+		//currently no replacement event available!
 		Util::connectHook('OC_Filesystem', 'preSetup', $this, 'addStorageWrapper');
 	}
 
 	public function boot(IBootContext $context): void {
+		// No initialization needed
 	}
 }

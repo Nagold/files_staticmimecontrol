@@ -13,11 +13,11 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['7.4', '8.0', '8.1']
+        php-versions: ['8.3']
 
     name: php${{ matrix.php-versions }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: remove composer.lock
         run: rm -rf ./composer.lock
@@ -36,12 +36,12 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['7.4', '8.0', '8.1']
+        php-versions: ['8.3']
 
     name: cs php${{ matrix.php-versions }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: remove composer.lock
         run: rm -rf ./composer.lock
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download schema
         run: wget https://apps.nextcloud.com/schema/apps/info.xsd
       - name: Lint info.xml

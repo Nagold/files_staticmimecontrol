@@ -60,41 +60,41 @@ composer-install:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
     --user $(shell id -u):$(shell id -g) \
-    jitesoft/composer:8.1 composer install --no-scripts
+    jitesoft/composer:8.3 composer install --no-scripts
 
 # require PHP Dependencies via Composer usage make composer-require module=modulename
 composer-require:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
-    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.1 composer require $(module) --no-scripts
+    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.3 composer require $(module) --no-scripts
 
 # remove PHP Dependencies via Composer usage make composer-remove module=modulename
 composer-remove:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
-    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.1 composer remove $(module)
+    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.3 composer remove $(module)
 
 # check for outdated PHP Dependencies via Composer
 composer-outdated:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
-    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.1 composer outdated
+    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.3 composer outdated
 
 # check for outdated PHP Dependencies via Composer
 composer-update:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
-    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.1 composer update --no-scripts
+    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.3 composer update --no-scripts
 
 # lint via Composer
 composer-lint:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
-    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.1 composer run lint
+    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.3 composer run lint
 
 # cs-fix via Composer
 composer-cs-fix:
 	docker run --rm --name compose-maintainence --interactive \
     --volume $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))):/var/www/html \
-    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.1 composer run cs:fix
+    --user $(shell id -u):$(shell id -g) jitesoft/composer:8.3 composer run cs:fix
 

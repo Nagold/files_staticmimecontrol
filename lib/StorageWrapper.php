@@ -22,208 +22,134 @@
 
 namespace OCA\FilesStaticmimecontrol;
 
-use \Exception as Exception;
-use OC\Files\Storage\Storage;
+use Exception;
+use OC\Files\Storage\Wrapper\Jail;
 use OC\Files\Storage\Wrapper\Wrapper;
 use OCP\Files\ForbiddenException;
+use OCP\Files\Storage\IStorage;
 use OCP\Files\Storage\IWriteStreamStorage;
-use OCP\IUserManager;
+use OCP\IConfig;
 
 class StorageWrapper extends Wrapper implements IWriteStreamStorage {
-	private $mountPoint;
+	private IConfig $config;
 
-	/** @var  IUserManager */
-	private $userManager;
+	protected $storage;
 
-	private $userSession;
 
-	/**
-	 * @param array $parameters
-	 */
-	public function __construct($parameters) {
-		parent::__construct($parameters);
-		$this->mountPoint = $parameters['mountPoint'];
-		$this->userSession = $parameters['userSession'];
+	public function __construct(array $parameters, IStorage $storage, IConfig $config) {
+		parent::__construct(['storage' => $storage]);
+		$this->config = $config;
+		$this->storage = $storage;
 	}
 
 	/**
-	 * reads the json config rules
+	 * Reads the JSON config rules.
 	 *
 	 * @param string $path
 	 * @param string $mimetype
 	 * @return array
 	 */
-	public function readRules($path, $mimetype) {
-		$staticmimecontrolcfg = $this->readConfig();
-		if (is_array($staticmimecontrolcfg) && array_key_exists("rules", $staticmimecontrolcfg)) {
-			$staticmimecontrolrules = $staticmimecontrolcfg["rules"];
-			$staticmimecontrolrulesfiltered = array_filter($staticmimecontrolrules, function ($value) use ($path, $mimetype) {
-				$pathmatch = preg_match('%' . $value["path"] . '%', $path);
-				$mimematch = preg_match('%' . $value["mime"] . '%', $mimetype);
-				return ($pathmatch && $mimematch);
-			});
-			return $staticmimecontrolrulesfiltered;
+	public function readRules(string $path, string $mimetype): array {
+		$config = $this->readConfig();
+
+		if (!isset($config['rules']) || !is_array($config['rules'])) {
+			return [];
 		}
-		return [];
+
+		return array_filter($config['rules'], function ($rule) use ($path, $mimetype) {
+			return preg_match('%' . $rule['path'] . '%', $path) &&
+				preg_match('%' . $rule['mime'] . '%', $mimetype);
+		});
 	}
 
-
-
 	/**
-	 * reads the json config
+	 * Reads the JSON config.
 	 *
 	 * @return array
 	 */
-	public function readConfig() {
+	public function readConfig(): array {
 		try {
-			$config = \OC::$server->getConfig();
-			$datadir = $config->getSystemValue('datadirectory', \OC::$SERVERROOT . '/data/');
-			$jsonFile = $config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
+			$datadir = $this->config->getSystemValue('datadirectory', \OC::$SERVERROOT . '/data/');
+			$jsonFile = $this->config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
+
+			return is_file($jsonFile) ? json_decode(file_get_contents($jsonFile), true) ?? [] : [];
 		} catch (Exception $e) {
-			error_log("error reading staticmimecontrol_file config: " . $e->getMessage(), 0);
+			error_log('Error reading staticmimecontrol_file config: ' . $e->getMessage());
 			return [];
 		}
-		if (is_file($jsonFile)) {
-			return json_decode(file_get_contents($jsonFile), true);
-		}
-		return [];
 	}
 
 	/**
+	 * Checks if access to a file is allowed.
+	 *
 	 * @throws ForbiddenException
 	 */
 	protected function checkFileAccess(string $path, bool $isDir = false): void {
-		$currentusersession = $this->userSession->getUser();
-		$currentmountpoint = $this->mountPoint;
-		$storagetypeobj = $this->storage->storage->storage;
+		$config = $this->readConfig();
+		$denyRoot = $config['denyrootbydefault'] ?? true;
 
-		if ($storagetypeobj != null) {
-			$storagetype = get_class($storagetypeobj);
-		} else {
-			$storagetype = "NotAvailable";
+		$absolutePath = $this->storage->instanceOfStorage(Jail::class)
+			? $this->storage->getUnjailedPath($path)
+			: $path;
+
+
+		if ($absolutePath === 'files' && $denyRoot) {
+			throw new ForbiddenException('Access denied to default folder', false);
 		}
 
 
 
-		$prefix = "files";
+		$newPath = ltrim(str_replace('files', '', $absolutePath), '/');
 
-		if (isset($this->readConfig()["denyrootbydefault"])) {
-			$denyroot = $this->readConfig()["denyrootbydefault"];
-		} else {
-			$denyroot = true;
-		}
+		if (!str_starts_with($newPath, 'appdata_oc') && !str_starts_with($newPath, 'uploads/')) {
+			if ($parentPath = dirname($newPath)) {
+				$mime = $this->storage->getMimeType($path) ?? '';
 
-		if ($path == $prefix && $denyroot) {
-			throw new ForbiddenException('Access denied to default Folder', false);
-		}
-
-		$newpath = $path;
-		if (substr($newpath, 0, strlen($prefix)) == $prefix) {
-			$newpath = substr($newpath, strlen($prefix));
-		}
-		if (substr($newpath, 0, 1) == "/") {
-			$newpath = substr($newpath, 1);
-		}
-
-		$prefix_1 = "appdata_oc";
-		$prefix_2 = "uploads/";
-
-		if (substr($newpath, 0, strlen($prefix_1)) != $prefix_1 && substr($path, 0, strlen($prefix_2)) != $prefix_2) {
-			if (dirname($newpath) != "" && dirname($newpath) != ".") {
-				$mime = $this->storage->getMimeType($path);
-				if (!$mime || $mime == "httpd/unix-directory") {
+				if ($mime === 'httpd/unix-directory') {
 					return;
 				}
-				$cfg = $this->readRules(dirname($newpath), $mime);
 
+				if (empty($this->readRules($parentPath, $mime))) {
 
-
-				if (count($cfg) === 0) {
-					if (isset($mime)) {
-						$msg = 'Access denied to '.$mime. ' in Folder '. $newpath;
-					} else {
-						$msg = 'Access denied in Folder '. $newpath;
-					}
-
-					error_log($msg, 0);
-					throw new ForbiddenException($msg, false);
+					throw new ForbiddenException("Access denied to $mime in folder $newPath (absolute Path: $absolutePath )", false);
 				}
 			}
 		}
 	}
 
-
-
-	/**
-	 * check if a file can be created in $path
-	 *
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isCreatable($path) {
+	public function isCreatable(string $path): bool {
 		try {
 			$this->checkFileAccess($path);
-		} catch (ForbiddenException $e) {
+			return $this->storage->isCreatable($path);
+		} catch (ForbiddenException) {
 			return false;
 		}
-		return $this->storage->isCreatable($path);
 	}
 
-
-	/**
-	 * check if a file can be written to
-	 *
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isUpdatable($path) {
+	public function isUpdatable(string $path): bool {
 		try {
 			$this->checkFileAccess($path);
-		} catch (ForbiddenException $e) {
+			return $this->storage->isUpdatable($path);
+		} catch (ForbiddenException) {
 			return false;
 		}
-		return $this->storage->isUpdatable($path);
 	}
 
-
-	/**
-	 * see http://php.net/manual/en/function.file_put_contents.php
-	 *
-	 * @param string $path
-	 * @param string $data
-	 * @return bool
-	 * @throws ForbiddenException
-	 */
-	public function file_put_contents($path, $data) {
+	public function file_put_contents(string $path, mixed $data): int|float|false {
 		$this->checkFileAccess($path);
 		return $this->storage->file_put_contents($path, $data);
 	}
 
-	/**
-	 * see http://php.net/manual/en/function.touch.php
-	 * If the backend does not support the operation, false should be returned
-	 *
-	 * @param string $path
-	 * @param int $mtime
-	 * @return bool
-	 * @throws ForbiddenException
-	 */
-	public function touch($path, $mtime = null) {
+	public function touch(string $path, ?int $mtime = null): bool {
 		$this->checkFileAccess($path);
 		return $this->storage->touch($path, $mtime);
 	}
 
-
-	/**
-	 * @throws ForbiddenException
-	 */
-	public function writeStream(string $path, $stream, int $size = null): int {
-		// Required for object storage since  part file is not in the storage so we cannot check it before moving it to the storage
-		// As an alternative we might be able to check on the cache update/insert/delete though the Cache wrapper
+	public function writeStream(string $path, $stream, ?int $size = null): int {
 		$result = $this->storage->writeStream($path, $stream, $size);
 		try {
 			$this->checkFileAccess($path);
-		} catch (\Exception $e) {
+		} catch (ForbiddenException $e) {
 			$this->storage->unlink($path);
 			throw $e;
 		}
