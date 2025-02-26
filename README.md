@@ -49,7 +49,7 @@ To setup a new development instance, we recommend to use [juliushaertl/nextcloud
 
 ```
 sudo echo "127.0.0.1 nextcloud.local" >> /etc/hosts
-sudo echo "127.0.0.1 stable25.local" >> /etc/hosts
+sudo echo "127.0.0.1 stable31.local" >> /etc/hosts
 
 mkdir -p $HOME/temp_staticmimecontrol
 git clone https://github.com/juliushaertl/nextcloud-docker-dev $HOME/temp_staticmimecontrol/nextcloud-docker-dev
@@ -59,14 +59,14 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/server/
 git fetch --unshallow
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git fetch origin
-git worktree add ../stable25 stable25
-cd ../stable25
+git worktree add ../stable31 stable31
+cd ../stable31
 git submodule update --init
-git clone https://github.com/Nagold/files_staticmimecontrol $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/apps/files_staticmimecontrol
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/apps/files_staticmimecontrol
+git clone https://github.com/Nagold/files_staticmimecontrol $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable31/apps/files_staticmimecontrol
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable31/apps/files_staticmimecontrol
 make composer-install
 cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev
-docker-compose up -d stable25 proxy database-mysql
+docker-compose up -d stable31 proxy database-mysql
 docker-compose logs -f
 ```
 
@@ -81,7 +81,7 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose down
 ## run dev env afterwards
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose up -d stable25 proxy database-mysql && docker-compose logs -f
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose up -d stable31 proxy database-mysql && docker-compose logs -f
 ```
 
 ## follow container logs
@@ -93,37 +93,37 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose logs -f
 ## enable xdebug after start
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini" && docker-compose exec stable25 /bin/bash -c "pkill -USR1 apache2"
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable31 /bin/bash -c "sed -i 's|xdebug.mode = off|xdebug.mode = debug|g' /usr/local/etc/php/conf.d/xdebug.ini" && docker-compose exec stable31 /bin/bash -c "pkill -USR1 apache2"
 ```
 
 
 ## enable staticmimecontrol
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ app:enable files_staticmimecontrol"
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable31 /bin/bash -c "sudo -E -u www-data php occ app:enable files_staticmimecontrol"
 ```
 
 ## install groupfolders
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ app:install groupfolders"
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable31 /bin/bash -c "sudo -E -u www-data php occ app:install groupfolders"
 ```
 
 ## add testgroup(folder)
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ group:add testgroup" && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ group:adduser testgroup user1" && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ groupfolders:create testgroupfolder" && docker-compose exec stable25 /bin/bash -c "sudo -E -u www-data php occ groupfolders:group 1 testgroup write share delete"
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable31 /bin/bash -c "sudo -E -u www-data php occ group:add testgroup" && docker-compose exec stable31 /bin/bash -c "sudo -E -u www-data php occ group:adduser testgroup user1" && docker-compose exec stable31 /bin/bash -c "sudo -E -u www-data php occ groupfolders:create testgroupfolder" && docker-compose exec stable31 /bin/bash -c "sudo -E -u www-data php occ groupfolders:group 1 testgroup write share delete"
 ```
 
 ## open vscode
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 && code .
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable31 && code .
 ```
 
 
 
 ## Configure VSCode and Chrome/Brave
 
-* Create the file $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25/.vscode/launch.json with the following contents, to enable xdebug:
+* Create the file $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable31/.vscode/launch.json with the following contents, to enable xdebug:
 
 ```
 {
@@ -168,15 +168,15 @@ cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 && code 
 * pin xdebug helper to your Browser bar
 * start dev env
 * see enable `xdebug after start` above
-* go to http://stable25.local/index.php/login and enable debugging via the xdebug helper button
-* Open $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable25 in vscode and press F5 to run xdebug debugging
-* refresh http://stable25.local/index.php/login , login with admin:admin and enable files_staticmimecontrol via the admin menu
+* go to http://stable31.local/index.php/login and enable debugging via the xdebug helper button
+* Open $HOME/temp_staticmimecontrol/nextcloud-docker-dev/workspace/stable31 in vscode and press F5 to run xdebug debugging
+* refresh http://stable31.local/index.php/login , login with admin:admin and enable files_staticmimecontrol via the admin menu
 * happy debugging :D
 
 ## how to edit staticmimecontrol.json in the container
 
 ```
-cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable25 /bin/bash
+cd $HOME/temp_staticmimecontrol/nextcloud-docker-dev && docker-compose exec stable31 /bin/bash
 rm -rf /etc/apt/sources.list.d/blackfire.list && apt-get update && apt-get install nano
 nano data/staticmimecontrol.json
 ```
