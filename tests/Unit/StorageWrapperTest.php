@@ -52,7 +52,7 @@ class StorageWrapperTest extends TestCase {
         $this->assertSame($expected, $result, "Failed for path: $path, mime: $mimeType");
     }
 
-    public function fileUploadProvider(): array {
+    public static function fileUploadProvider(): array {
         return [
             // Root uploads
             ['files/test.jpg', 'image/jpeg', true],
