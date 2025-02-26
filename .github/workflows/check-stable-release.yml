@@ -11,7 +11,7 @@ on:
     - cron:  '30 14 * * *'
 
 env:
-  PHP_VERSION: 8.1
+  PHP_VERSION: 8.3
 
 jobs:
   build_and_publish:
@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: get current supported version
         run: echo "SUPPORTED_VERSION=$(cat ./appinfo/info.xml | grep 'max-version' | sed 's|.*max-version="||g' | sed 's|".*||g')" >> $GITHUB_ENV
       - name: calculate next version
@@ -30,7 +30,7 @@ jobs:
         run: echo "NEXT_STABLE_BRANCH_OUTPUT=$(curl -s -L "http://api.github.com/repos/nextcloud/server/branches/${{ env.NEXT_SABLE_BRANCH }}" |jq -r '.name')" >> $GITHUB_ENV
 
       - name: create issue from file
-        uses: JasonEtco/create-an-issue@v2.9.1
+        uses: JasonEtco/create-an-issue@v2.9.2
         id: issue
         if: ${{ env.NEXT_STABLE_BRANCH_OUTPUT == env.NEXT_SABLE_BRANCH }}
         env:

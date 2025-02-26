@@ -24,6 +24,6 @@
 	<bugs>https://github.com/Nagold/files_staticmimecontrol/issues</bugs>
 	<repository type="git">https://github.com/Nagold/files_staticmimecontrol.git</repository>
 	<dependencies>
-		<nextcloud min-version="24" max-version="25" />
+		<nextcloud min-version="31" max-version="31" />
 	</dependencies>
 </info>
