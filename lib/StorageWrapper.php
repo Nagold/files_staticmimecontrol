@@ -29,17 +29,21 @@ use OCP\Files\ForbiddenException;
 use OCP\Files\Storage\IStorage;
 use OCP\Files\Storage\IWriteStreamStorage;
 use OCP\IConfig;
+use OCP\IUserSession;
+use function OCP\Log\logger;
 
 class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 	private IConfig $config;
 
 	protected $storage;
+	private IUserSession $userSession;
 
 
-	public function __construct(array $parameters, IStorage $storage, IConfig $config) {
+	public function __construct(array $parameters, IStorage $storage, IConfig $config, IUserSession $userSession) {
 		parent::__construct(['storage' => $storage]);
 		$this->config = $config;
 		$this->storage = $storage;
+		$this->userSession = $userSession;
 	}
 
 	/**
@@ -72,12 +76,27 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 			$datadir = $this->config->getSystemValue('datadirectory', \OC::$SERVERROOT . '/data/');
 			$jsonFile = $this->config->getSystemValue('staticmimecontrol_file', $datadir . '/staticmimecontrol.json');
 
-			return is_file($jsonFile) ? json_decode(file_get_contents($jsonFile), true) ?? [] : [];
+			logger('files_staticmimecontrol')->debug('Reading staticmimecontrol config file: ' . $jsonFile);
+
+			if (!is_file($jsonFile)) {
+				logger('files_staticmimecontrol')->error('Config file not found: ' . $jsonFile);
+				return [];
+			}
+
+			$configData = json_decode(file_get_contents($jsonFile), true);
+
+			if (empty($configData)) {
+				logger('files_staticmimecontrol')->error('Config file is empty or contains invalid JSON: ' . $jsonFile);
+				return [];
+			}
+
+			return $configData ?? [];
 		} catch (Exception $e) {
-			error_log('Error reading staticmimecontrol_file config: ' . $e->getMessage());
+			logger('files_staticmimecontrol')->error('Error reading files_staticmimecontrol config: ' . $e->getMessage());
 			return [];
 		}
 	}
+
 
 	/**
 	 * Checks if access to a file is allowed.
@@ -94,6 +113,7 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 
 
 		if ($absolutePath === 'files' && $denyRoot) {
+			logger('files_staticmimecontrol')->warning('Users [' . $this->getCurrentUser() . '] Access was denied to default folder');
 			throw new ForbiddenException('Access denied to default folder', false);
 		}
 
@@ -111,10 +131,18 @@ class StorageWrapper extends Wrapper implements IWriteStreamStorage {
 
 				if (empty($this->readRules($parentPath, $mime))) {
 
+					if ($mime != '') {
+						logger('files_staticmimecontrol')->warning('Users [' . $this->getCurrentUser() . '] Access was denied to ' . $newPath . ' (absolute Path: ' . $absolutePath . ') with mime type: ' . $mime);
+					}
 					throw new ForbiddenException("Access denied to $mime in folder $newPath (absolute Path: $absolutePath )", false);
 				}
 			}
 		}
+	}
+
+	private function getCurrentUser(): ?string {
+		$user = $this->userSession->getUser();
+		return $user ? $user->getUID() : 'unknown User';
 	}
 
 	public function isCreatable(string $path): bool {

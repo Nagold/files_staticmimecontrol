@@ -34,6 +34,7 @@ use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Events\BeforeFileSystemSetupEvent;
 use OCP\Files\Storage\IStorage;
 use OCP\IConfig;
+use OCP\IUserSession;
 
 class Application extends App implements IBootstrap {
 	public function __construct() {
@@ -59,9 +60,10 @@ class Application extends App implements IBootstrap {
 	public function addStorageWrapperCallback(string $mountPoint, IStorage $storage): IStorage {
 		if (php_sapi_name() !== 'cli' && !$storage->instanceOfStorage(SharedStorage::class)) {
 			$config = $this->getContainer()->get(IConfig::class);
+			$userSession = $this->getContainer()->get(IUserSession::class);
 
 			return new StorageWrapper([
-			], storage:$storage, config:$config);
+			], storage:$storage, config:$config, userSession:$userSession);
 		}
 		return $storage;
 	}
